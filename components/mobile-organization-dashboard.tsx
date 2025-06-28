@@ -1,5 +1,9 @@
 'use client';
 
+import { PWAInstallPrompt } from './pwa-install-prompt';
+import { PWAUpdatePrompt } from './pwa-update-prompt';
+import { PWAStatusIndicator } from './pwa-status-indicator';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,27 +23,32 @@ import {
   Plus,
   Home,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useOffline } from '@/hooks/use-offline';
 import { offlineManager } from '@/lib/offline-manager';
 import { OfflineIndicator } from './offline-indicator';
 import { OfflineBanner } from './offline-banner';
-import { PWAInstallPrompt } from './pwa-install-prompt';
-import { PWAUpdatePrompt } from './pwa-update-prompt';
-import { PWAStatusIndicator } from './pwa-status-indicator';
 
 export function MobileOrganizationDashboard() {
   const [activeTab, setActiveTab] = useState('home');
   const { isOnline } = useOffline();
 
   // Get cached data
-  const orgData = offlineManager.get('organization_data') || {
+  const [orgData, setOrgData] = useState({
     profile: { name: 'TechEdu University' },
     users: [],
     courses: [],
     departments: [],
     analytics: { totalStudents: 0, activeTeachers: 0, totalCourses: 0, revenue: 0 },
-  };
+  });
+
+  useEffect(() => {
+    offlineManager.get('organization_data').then(({ data }: any) => {
+      if (data) {
+        setOrgData(data);
+      }
+    });
+  }, []);
 
   return (
     <div className='min-h-screen bg-background pb-20'>

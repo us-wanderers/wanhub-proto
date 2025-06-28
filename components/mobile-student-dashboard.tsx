@@ -1,5 +1,9 @@
 'use client';
 
+import { PWAInstallPrompt } from './pwa-install-prompt';
+import { PWAUpdatePrompt } from './pwa-update-prompt';
+import { PWAStatusIndicator } from './pwa-status-indicator';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -20,29 +24,32 @@ import {
   Zap,
   Target,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useOffline } from '@/hooks/use-offline';
 import { offlineManager } from '@/lib/offline-manager';
 import { OfflineIndicator } from './offline-indicator';
 import { OfflineBanner } from './offline-banner';
-
-// Add these imports at the top
-import { PWAInstallPrompt } from './pwa-install-prompt';
-import { PWAUpdatePrompt } from './pwa-update-prompt';
-import { PWAStatusIndicator } from './pwa-status-indicator';
 
 export function MobileStudentDashboard() {
   const [activeTab, setActiveTab] = useState('home');
   const { isOnline } = useOffline();
 
   // Get cached data or use fallback
-  const studentData = offlineManager.get('student_data') || {
+  const [studentData, setStudentData] = useState({
     profile: { name: 'Alex Smith', email: 'alex@example.com' },
     courses: [],
     assignments: [],
     progress: { coursesEnrolled: 0, completed: 0, studyHours: 0, achievements: 0 },
     activities: [],
-  };
+  });
+
+  useEffect(() => {
+    offlineManager.get('student_data').then(({ data }: any) => {
+      if (data) {
+        setStudentData(data);
+      }
+    });
+  }, []);
 
   return (
     <div className='min-h-screen bg-background pb-20'>

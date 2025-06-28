@@ -294,8 +294,8 @@ class OfflineManager {
     };
 
     await this.set('student_data', studentData);
-    await indexedDBManager.set('userData', 'student_profile', {
-      key: 'student_profile',
+    await indexedDBManager.set('userData', 'student_data', {
+      key: 'student_data',
       userType: 'student',
       data: studentData,
       timestamp: Date.now(),
@@ -333,8 +333,8 @@ class OfflineManager {
     };
 
     await this.set('teacher_data', teacherData);
-    await indexedDBManager.set('userData', 'teacher_profile', {
-      key: 'teacher_profile',
+    await indexedDBManager.set('userData', 'teacher_data', {
+      key: 'teacher_data',
       userType: 'teacher',
       data: teacherData,
       timestamp: Date.now(),
@@ -374,8 +374,8 @@ class OfflineManager {
     };
 
     await this.set('organization_data', organizationData);
-    await indexedDBManager.set('userData', 'organization_profile', {
-      key: 'organization_profile',
+    await indexedDBManager.set('userData', 'organization_data', {
+      key: 'organization_data',
       userType: 'organization',
       data: organizationData,
       timestamp: Date.now(),

@@ -1,5 +1,9 @@
 'use client';
 
+import { PWAInstallPrompt } from './pwa-install-prompt';
+import { PWAUpdatePrompt } from './pwa-update-prompt';
+import { PWAStatusIndicator } from './pwa-status-indicator';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -22,29 +26,32 @@ import {
   Edit,
   Upload,
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useOffline } from '@/hooks/use-offline';
 import { offlineManager } from '@/lib/offline-manager';
 import { OfflineIndicator } from './offline-indicator';
 import { OfflineBanner } from './offline-banner';
-
-// Add these imports at the top
-import { PWAInstallPrompt } from './pwa-install-prompt';
-import { PWAUpdatePrompt } from './pwa-update-prompt';
-import { PWAStatusIndicator } from './pwa-status-indicator';
 
 export function MobileTeacherDashboard() {
   const [activeTab, setActiveTab] = useState('home');
   const { isOnline } = useOffline();
 
   // Get cached data
-  const teacherData = offlineManager.get('teacher_data') || {
+  const [teacherData, setTeacherData] = useState({
     profile: { name: 'Dr. Sarah Smith' },
     courses: [],
     students: [],
     assignments: [],
     analytics: { activeCourses: 0, totalStudents: 0, pendingReviews: 0, avgPerformance: 0 },
-  };
+  });
+
+  useEffect(() => {
+    offlineManager.get('teacher_data').then(({ data }: any) => {
+      if (data) {
+        setTeacherData(data);
+      }
+    });
+  }, []);
 
   return (
     <div className='min-h-screen bg-background pb-20'>
