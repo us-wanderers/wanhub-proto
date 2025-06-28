@@ -1,105 +1,96 @@
-"use client"
+'use client';
 
-import { useOffline } from "@/hooks/use-offline"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Wifi, WifiOff, RefreshCw, Download, Trash2, Database, Clock } from "lucide-react"
-import { useState } from "react"
+import { useState } from 'react';
+import { Wifi, WifiOff, Database, FolderSyncIcon as Sync, AlertCircle } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { useOffline } from '@/hooks/use-offline';
+import { cn } from '@/lib/utils';
 
-interface OfflineIndicatorProps {
-  userType: "student" | "teacher" | "organization"
-}
+export function OfflineIndicator() {
+  const { isOnline, isLoading, lastSync, cacheSize, syncQueueSize, isInitialized, syncData } = useOffline();
 
-export function OfflineIndicator({ userType }: OfflineIndicatorProps) {
-  const { isOnline, isLoading, lastSync, cacheSize, syncData, clearCache, preloadData } = useOffline()
-  const [showDetails, setShowDetails] = useState(false)
+  const [showDetails, setShowDetails] = useState(false);
+
+  if (!isInitialized) {
+    return (
+      <Badge variant='secondary' className='flex items-center gap-1'>
+        <Database className='h-3 w-3 animate-pulse' />
+        Initializing...
+      </Badge>
+    );
+  }
 
   return (
-    <>
-      {/* Status Indicator */}
-      <div className="flex items-center gap-2">
-        <Badge variant={isOnline ? "default" : "destructive"} className="flex items-center gap-1">
-          {isOnline ? <Wifi className="w-3 h-3" /> : <WifiOff className="w-3 h-3" />}
-          {isOnline ? "Online" : "Offline"}
-        </Badge>
+    <div className='flex items-center gap-2'>
+      <Badge
+        variant={isOnline ? 'default' : 'destructive'}
+        className={cn('flex items-center gap-1 cursor-pointer transition-all', showDetails && 'rounded-b-none')}
+        onClick={() => setShowDetails(!showDetails)}
+      >
+        {isOnline ? <Wifi className='h-3 w-3' /> : <WifiOff className='h-3 w-3' />}
+        {isOnline ? 'Online' : 'Offline'}
+        {syncQueueSize > 0 && (
+          <span className='ml-1 bg-orange-500 text-white rounded-full px-1 text-xs'>{syncQueueSize}</span>
+        )}
+      </Badge>
 
-        <Button variant="ghost" size="sm" onClick={() => setShowDetails(!showDetails)} className="h-6 px-2 text-xs">
-          <Database className="w-3 h-3 mr-1" />
-          {cacheSize}
-        </Button>
-      </div>
-
-      {/* Offline Details Panel */}
       {showDetails && (
-        <Card className="mt-2 border-dashed">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm flex items-center gap-2">
-              <Database className="w-4 h-4" />
-              Offline Mode
-            </CardTitle>
-            <CardDescription className="text-xs">
-              {isOnline ? "You're online. Data will sync automatically." : "You're offline. Using cached data."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {/* Cache Info */}
-            <div className="flex justify-between items-center text-xs">
-              <span>Cached Items:</span>
-              <span className="font-medium">{cacheSize}</span>
+        <div className='absolute top-full left-0 mt-1 bg-white border rounded-md shadow-lg p-3 min-w-64 z-50'>
+          <div className='space-y-2 text-sm'>
+            <div className='flex items-center justify-between'>
+              <span className='text-gray-600'>Status:</span>
+              <span className={isOnline ? 'text-green-600' : 'text-red-600'}>
+                {isOnline ? 'Connected' : 'Disconnected'}
+              </span>
             </div>
 
-            {lastSync && (
-              <div className="flex justify-between items-center text-xs">
-                <span>Last Sync:</span>
-                <span className="font-medium flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {lastSync.toLocaleTimeString()}
+            <div className='flex items-center justify-between'>
+              <span className='text-gray-600'>Cache Size:</span>
+              <span>{cacheSize} items</span>
+            </div>
+
+            {syncQueueSize > 0 && (
+              <div className='flex items-center justify-between'>
+                <span className='text-gray-600'>Pending Sync:</span>
+                <span className='flex items-center gap-1 text-orange-600'>
+                  <AlertCircle className='h-3 w-3' />
+                  {syncQueueSize} items
                 </span>
               </div>
             )}
 
-            {/* Actions */}
-            <div className="flex gap-2 pt-2">
+            {lastSync && (
+              <div className='flex items-center justify-between'>
+                <span className='text-gray-600'>Last Sync:</span>
+                <span>{lastSync.toLocaleTimeString()}</span>
+              </div>
+            )}
+
+            <div className='pt-2 border-t'>
               <Button
-                size="sm"
-                variant="outline"
-                onClick={() => preloadData(userType)}
-                disabled={isLoading}
-                className="flex-1 h-8 text-xs"
+                size='sm'
+                variant='outline'
+                onClick={syncData}
+                disabled={isLoading || !isOnline}
+                className='w-full bg-transparent'
               >
                 {isLoading ? (
-                  <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
+                  <>
+                    <Sync className='h-3 w-3 mr-1 animate-spin' />
+                    Syncing...
+                  </>
                 ) : (
-                  <Download className="w-3 h-3 mr-1" />
+                  <>
+                    <Sync className='h-3 w-3 mr-1' />
+                    Sync Now
+                  </>
                 )}
-                Cache Data
-              </Button>
-
-              {isOnline && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={syncData}
-                  disabled={isLoading}
-                  className="flex-1 h-8 text-xs bg-transparent"
-                >
-                  {isLoading ? (
-                    <RefreshCw className="w-3 h-3 mr-1 animate-spin" />
-                  ) : (
-                    <RefreshCw className="w-3 h-3 mr-1" />
-                  )}
-                  Sync
-                </Button>
-              )}
-
-              <Button size="sm" variant="outline" onClick={clearCache} className="h-8 px-2 bg-transparent">
-                <Trash2 className="w-3 h-3" />
               </Button>
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
-    </>
-  )
+    </div>
+  );
 }

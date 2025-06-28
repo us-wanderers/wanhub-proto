@@ -1,5 +1,5 @@
 /** @type {import('next').NextConfig} */
-const nextConfig = {
+export default {
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -9,6 +9,6 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-}
 
-export default nextConfig
+  reactStrictMode: true,
+};
